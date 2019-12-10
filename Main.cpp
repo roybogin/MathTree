@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <regex>
+#include <stack>
 using namespace std;
 
 struct NodeValue
@@ -101,10 +102,35 @@ public:
 	}
 };
 
+void removeBrackets(string& eq)
+{
+	if (eq[0] == '(' && eq[eq.length() - 1] == ')')
+	{
+		bool cntWasZero = false;
+		int cnt = 0;
+		int len = eq.length();
+		for (int i = 0; i < len; i++)
+		{
+			if (eq[i] == '(')
+				cnt++;
+			else if (eq[i] == ')')
+			{
+				cnt--;
+				if (cnt == 0 && i != len - 1)
+					cntWasZero = true;
+			}
+		}
+		if (!cntWasZero)
+		{
+			eq = eq.substr(1, len - 2);
+			return removeBrackets(eq);
+		}
+	}
+}
+
 bool okayInBrackets(string eq, int idx)
 {
-	if (regex_match(eq, regex("\\([^()]*\\)")))
-		return true;
+
 	int cnt = 0;
 	for (int i = 0; i < idx; i++)
 	{
@@ -118,14 +144,13 @@ bool okayInBrackets(string eq, int idx)
 
 BinMathTree* toTree(string eq)
 {
+	removeBrackets(eq);
 	eq = regex_replace(eq, regex("\\s"), "");
 	eq = regex_replace(eq, regex("e"), to_string(M_E));
 	eq = regex_replace(eq, regex("pi"), to_string(M_PI));
 
-	if (eq.find_first_not_of("0123456789.()") == eq.npos)
+	if (eq.find_first_not_of("0123456789.") == eq.npos)
 	{
-		eq = regex_replace(eq, regex("\\("), "");
-		eq = regex_replace(eq, regex("\\)"), "");
 		return new BinMathTree(stod(eq));
 	}
 	string order[] = { "+-", "*/", "^" };
@@ -173,7 +198,6 @@ double eval(BinMathTree* tree)
 		break;
 	}
 }
-
 
 
 int main()
